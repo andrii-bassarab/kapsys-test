@@ -36,6 +36,12 @@ body {
 
 .task-container {
   margin-top: 40px;
+
+  @include breakpoints.devices(sm) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
 }
 
 .flex {

@@ -35,9 +35,7 @@
   font-weight: 400;
   color: $secondary-color;
   margin-bottom: 7px;
-  @include breakpoints.devices(sm) {
-    margin-top: 15px;
-  }
+  margin-top: 0;
 }
 
 .priority {
@@ -57,10 +55,11 @@
 }
 
 .task-status-wrapper {
-  width: 100px;
   text-align: center;
+
   @include breakpoints.devices(sm) {
     margin-top: 15px;
+    width: 100%;
     text-align: left;
   }
 }
@@ -78,13 +77,30 @@
 }
 
 .progress {
-  @include breakpoints.devices(sm) {
-    margin-top: 15px;
-  }
+  margin: 0 20px;
 }
 
 .actions {
   @include breakpoints.devices(sm) {
     margin-top: 15px;
+  }
+}
+
+.title-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  @include breakpoints.devices(sm) {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+.right-align {
+  @include breakpoints.devices(sm) {
+    justify-content: flex-end;
   }
 }
