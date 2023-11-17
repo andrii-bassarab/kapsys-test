@@ -69,4 +69,8 @@ body {
 
 .w-100 {
   width: 170px;
+
+  @include breakpoints.devices(sm) {
+    width: 100%;
+  }
 }

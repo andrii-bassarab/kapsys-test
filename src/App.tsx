@@ -5,75 +5,32 @@ import AddEditTaskForm from "./components/AddEditTaskForm";
 import Button from "./components/Button";
 import DeleteModal from "./components/DeleteModal";
 import TaskCard from "./components/TaskCard";
-import { ITask } from "./types/task";
-import { getTasks } from "./services/api";
+import { useAppDispatch, useAppSelector } from "./app/hooks";
+import { initTasks } from "./features/tasks";
 
 const App = () => {
+  const dispatch = useAppDispatch();
   const [showAddEditModal, setShowAddEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [taskList, setTaskList] = useState<ITask[]>([]);
-  const [idItemToDelete, setIdItemToDelete] = useState("");
-  const [taskToEdit, setTaskToEdit] = useState<ITask>({} as ITask);
-  const [typeModalAddEdit, setTypeModalAddEdit] = useState<"add" | "edit">(
-    "add"
-  );
+  const [typeModalIsAdd, setTypeModalIsAdd] = useState(true);
+
+  const { tasks: taskList } = useAppSelector((state) => state.tasks);
 
   useEffect(() => {
-    const getDataTasks = async () => {
-      const data = await getTasks();
-      setTaskList(data);
-    };
-    getDataTasks();
+    dispatch(initTasks());
   }, []);
 
-  const handleOpenAddModal = () => {
-    setShowAddEditModal((prev) => !prev);
-    setTypeModalAddEdit("add");
-  };
-
-  const handleAddTask = (newTask: ITask) => {
-    setTaskList((prev) => [newTask, ...prev]);
-  };
-
-  const handleDeleteItem = () => {
-    setTaskList((prev) => prev.filter((task) => task.id !== idItemToDelete));
-    setShowDeleteModal(false);
-  };
-
-  const handleOpenModalDelete = (id: string) => {
-    setShowDeleteModal(true);
-    setIdItemToDelete(id);
-  };
-  const handleCancelDelete = () => setShowDeleteModal(false);
-
-  const handleOpenEditModal = (taskToEdit: ITask) => {
+  const handleOpenAddTaskModal = () => {
     setShowAddEditModal(true);
-    setTypeModalAddEdit("edit");
-    setTaskToEdit(taskToEdit);
+    setTypeModalIsAdd(true);
   };
 
-  const handleEditItem = (taskToEdit: ITask) => {
-    setTaskList((prev) =>
-      prev.map((task) => {
-        if (taskToEdit?.id === task.id) {
-          return taskToEdit;
-        }
+  const handleChangeShowDeleteModal = (value: boolean) =>
+    setShowDeleteModal(value);
 
-        return task;
-      })
-    );
-  };
-
-  const handleUpdateStatus = (taskToEditStatus: ITask) => {
-    setTaskList((prev) =>
-      prev.map((task) => {
-        if (taskToEditStatus?.id === task.id) {
-          return taskToEditStatus;
-        }
-
-        return task;
-      })
-    );
+  const handleOpenEditModal = () => {
+    setShowAddEditModal(true);
+    setTypeModalIsAdd(false);
   };
 
   return (
@@ -84,17 +41,16 @@ const App = () => {
           <Button
             title="Add Task"
             icon={<Add />}
-            onClick={handleOpenAddModal}
+            onClick={handleOpenAddTaskModal}
           />
         </div>
         <div className="task-container">
           {taskList.map((task) => (
             <TaskCard
               key={task.id}
-              handleOpenModalDelete={handleOpenModalDelete}
               task={task}
+              handleOpenModalDelete={() => handleChangeShowDeleteModal(true)}
               handleOpenEditModal={handleOpenEditModal}
-              handleUpdateStatus={handleUpdateStatus}
             />
           ))}
         </div>
@@ -102,16 +58,12 @@ const App = () => {
       {showAddEditModal && (
         <AddEditTaskForm
           closeModalWindow={() => setShowAddEditModal(false)}
-          handleAddTask={handleAddTask}
-          type={typeModalAddEdit}
-          taskToEdit={taskToEdit}
-          handleEditItem={handleEditItem}
+          typeModalIsAdd={typeModalIsAdd}
         />
       )}
       {showDeleteModal && (
         <DeleteModal
-          handleDeleteItem={handleDeleteItem}
-          handleCancelDelete={handleCancelDelete}
+          handleChangeShowDeleteModal={handleChangeShowDeleteModal}
         />
       )}
     </div>

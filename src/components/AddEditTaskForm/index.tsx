@@ -4,54 +4,57 @@ import Button from "../Button";
 import Input from "../Input";
 import Modal from "../Modal";
 import "./style.scss";
-import { ITask } from "../../types/task";
 import { useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { addTask, updateTask } from "../../features/tasks";
 
 interface IProps {
   closeModalWindow: () => void;
-  handleAddTask: (newTask: ITask) => void;
-  type: "add" | "edit";
-  taskToEdit: ITask;
-  handleEditItem: (taskToEdit: ITask) => void;
+  typeModalIsAdd: boolean;
 }
+
+type Priority = "high" | "medium" | "low";
 
 const AddEditTaskForm: React.FC<IProps> = ({
   closeModalWindow,
-  handleAddTask,
-  type,
-  taskToEdit,
-  handleEditItem,
+  typeModalIsAdd,
 }) => {
-  const [title, setTitle] = useState(type === "add" ? "" : taskToEdit?.title);
-  const [priority, setPriority] = useState<"high" | "medium" | "low">(
-    type === "add" ? "low" : (taskToEdit?.priority as "high" | "medium" | "low")
+  const dispatch = useAppDispatch();
+  const { taskToEdit } = useAppSelector((state) => state.tasks);
+  const [title, setTitle] = useState(
+    typeModalIsAdd ? "" : taskToEdit?.title || ""
   );
-
-  console.log("priority", priority);
+  const [priority, setPriority] = useState<Priority>(
+    typeModalIsAdd ? "low" : (taskToEdit?.priority as Priority)
+  );
 
   const handleSubmit: React.MouseEventHandler<HTMLButtonElement> = (e) => {
     e.preventDefault();
     closeModalWindow();
 
-    if (type === "add") {
-      handleAddTask({
+    if (!typeModalIsAdd && taskToEdit) {
+      dispatch(
+        updateTask({
+          id: taskToEdit.id,
+          title,
+          priority,
+          status: taskToEdit.status,
+          progress: taskToEdit.progress,
+        })
+      );
+
+      return;
+    }
+
+    dispatch(
+      addTask({
         id: String(new Date().getUTCSeconds()),
         title,
         priority,
         status: "To Do",
         progress: 0,
-      });
-
-      return;
-    }
-
-    handleEditItem({
-      id: taskToEdit.id,
-      title,
-      priority,
-      status: taskToEdit.status,
-      progress: taskToEdit.progress,
-    });
+      })
+    );
   };
 
   return (
@@ -60,7 +63,7 @@ const AddEditTaskForm: React.FC<IProps> = ({
         <div className="add-edit-modal">
           <div className="flx-between">
             <span className="modal-title">
-              {type === "add" ? "Add Task" : "Edit task"}
+              {typeModalIsAdd ? "Add Task" : "Edit task"}
             </span>
             <Close className="cp" onClick={closeModalWindow} />
           </div>
@@ -74,23 +77,27 @@ const AddEditTaskForm: React.FC<IProps> = ({
           <div className="modal-priority">
             <span>Priority</span>
             <ul className="priority-buttons">
-              {["high", "medium", "low"].map((currentPriority) => (
-                <li
-                  key={currentPriority}
-                  className={classNames(currentPriority, {
-                    [`${priority}-selected`]: priority === currentPriority,
-                  })}
-                  onClick={() =>
-                    setPriority(currentPriority as "high" | "medium" | "low")
-                  }
-                >
-                  {currentPriority}
-                </li>
-              ))}
+              {(["high", "medium", "low"] as Priority[]).map(
+                (currentPriority) => (
+                  <li
+                    key={currentPriority}
+                    className={classNames(currentPriority, {
+                      [`${priority}-selected`]: priority === currentPriority,
+                    })}
+                    onClick={() => setPriority(currentPriority)}
+                  >
+                    {currentPriority}
+                  </li>
+                )
+              )}
             </ul>
           </div>
           <div className="flx-right mt-50">
-            <Button title="Add" disabled={!title} onClick={handleSubmit} />
+            <Button
+              title={typeModalIsAdd ? "Add" : "Edit"}
+              disabled={!title}
+              onClick={handleSubmit}
+            />
           </div>
         </div>
       </form>

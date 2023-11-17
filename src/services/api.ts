@@ -1,6 +1,6 @@
-export const getTasks = async () => {
-  const tasksFromServer = await fetch("http://localhost:3000/taskList");
-  const data = await tasksFromServer.json();
+const BASE_URL = "http://localhost:3000";
 
-  return data;
+export const getTasks = async () => {
+  const tasksFromServer = await fetch(`${BASE_URL}/taskList`);
+  return await tasksFromServer.json();
 };
